@@ -203,8 +203,8 @@ function show_weather( v_data, pi_lat, pi_long ) {
       v_color = '#ff0000';
 
     var element = new UI.Line({
-      position: new Vector2(i * 18, 140 - v_data.hourly[i].temp * 80 / v_temp_max_sup),
-      position2: new Vector2(( i + 1 ) * 18, 140 - v_data.hourly[i + 1].temp * 80 / v_temp_max_sup),
+      position: new Vector2(i * 18, 140 - v_data.hourly[i].temp * 45 / v_temp_max_sup),
+      position2: new Vector2(( i + 1 ) * 18, 140 - v_data.hourly[i + 1].temp * 45 / v_temp_max_sup),
       strokeWidth: 3,
       strokeColor: v_color,
     });
@@ -225,7 +225,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
 
   // Noter les Temperature max et min
   var v_description = new UI.Text({
-    position: new Vector2(0, 130 - v_temp_max * 80 / v_temp_max_sup),
+    position: new Vector2(0, 130 - v_temp_max * 45 / v_temp_max_sup),
     size: new Vector2(20, 20),
     text : Math.round( v_temp_max ) + '°',
     font: 'Gothic 14',
@@ -252,9 +252,9 @@ function show_weather( v_data, pi_lat, pi_long ) {
     } while( v_rain_snow_max >= 0 );
   }
 
-  var v_pos_min = 130 - v_temp_min * 80 / v_temp_max_sup;
+  var v_pos_min = 130 - v_temp_min * 45 / v_temp_max_sup;
   // Décaller pour ne pas superpositionner le texte
-  if( v_pos_min - ( 130 - v_temp_max * 80 / v_temp_max_sup ) < 15 )
+  if( v_pos_min - ( 130 - v_temp_max * 45 / v_temp_max_sup ) < 15 )
     v_pos_min += 15;
 
   if( Math.round( v_temp_min ) != Math.round( v_temp_max ) ) {
