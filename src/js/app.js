@@ -97,7 +97,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
   var v_desc_y   = 45;
   var v_color;
   var v_offset_text;  // Vertical position for temperature, according to text information
-  var v_size_rain;
+  var v_size_rain = 11.25;
 
   // Degre
   var v_degree = new UI.Text({
@@ -231,7 +231,6 @@ function show_weather( v_data, pi_lat, pi_long ) {
       v_rain_snow_max = v_snow;
   }
 
-  v_size_rain = Math.round( ( 140 - v_desc_y - 5 ) / v_rain_snow_max * 100 ) / 100;
   for( i = 1; i <= 6; i++ ) {
     var v_rain = 0;
     var v_snow = 0;
