@@ -89,6 +89,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
   var infowindow = new UI.Window();
   var v_desc_y   = 45;
   var v_color;
+  var v_offset_temp;  // Vertical position for temperature, according to text information
 
   // Degre
   var v_degree = new UI.Text({
@@ -143,6 +144,53 @@ function show_weather( v_data, pi_lat, pi_long ) {
     textAlign: 'left'
   });
   infowindow.add(v_description);
+
+  // Vent
+  if( v_data.current.wind_speed > 0 ) {
+    var v_description = new UI.Text({
+      position: new Vector2(0, v_desc_y),
+      size: new Vector2(144, 20),
+      text : "Vent: " + Math.round( v_data.current.wind_speed * 18 / 5 * 100 ) / 100 + 'km/h ' + windDirection( v_data.current.wind_deg ),
+      font: 'Gothic 14',
+      color: 'white',
+      textAlign: 'left'
+    });
+    infowindow.add(v_description);
+
+    v_desc_y += 15;
+  }
+
+  // Nuage
+  if( v_data.current.clouds > 0 ) {
+    var v_description = new UI.Text({
+      position: new Vector2(0, v_desc_y),
+      size: new Vector2(144, 20),
+      text : "Nuage: " + v_data.current.clouds + '%',
+      font: 'Gothic 14',
+      color: 'white',
+      textAlign: 'left'
+    });
+    infowindow.add(v_description);
+
+    v_desc_y += 15;
+  }
+
+  // UV
+  if( v_data.current.uvi > 0 ) {
+    var v_description = new UI.Text({
+      position: new Vector2(0, v_desc_y),
+      size: new Vector2(144, 20),
+      text : "UV: " + v_data.current.uvi,
+      font: 'Gothic 14',
+      color: 'white',
+      textAlign: 'left'
+    });
+    infowindow.add(v_description);
+
+    v_desc_y += 15;
+  }
+
+  v_offset_temp = 140 - v_desc_y - 5;
 
   // Graphe
   var element = new UI.Line({
@@ -203,8 +251,8 @@ function show_weather( v_data, pi_lat, pi_long ) {
       v_color = '#ff0000';
 
     var element = new UI.Line({
-      position: new Vector2(i * 18, 140 - v_data.hourly[i].temp * 45 / v_temp_max_sup),
-      position2: new Vector2(( i + 1 ) * 18, 140 - v_data.hourly[i + 1].temp * 45 / v_temp_max_sup),
+      position: new Vector2(i * 18, 140 - v_data.hourly[i].temp * v_offset_temp / v_temp_max_sup),
+      position2: new Vector2(( i + 1 ) * 18, 140 - v_data.hourly[i + 1].temp * v_offset_temp / v_temp_max_sup),
       strokeWidth: 3,
       strokeColor: v_color,
     });
@@ -225,7 +273,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
 
   // Noter les Temperature max et min
   var v_description = new UI.Text({
-    position: new Vector2(0, 130 - v_temp_max * 45 / v_temp_max_sup),
+    position: new Vector2(0, 130 - v_temp_max * v_offset_temp / v_temp_max_sup),
     size: new Vector2(20, 20),
     text : Math.round( v_temp_max ) + '°',
     font: 'Gothic 14',
@@ -252,9 +300,9 @@ function show_weather( v_data, pi_lat, pi_long ) {
     } while( v_rain_snow_max >= 0 );
   }
 
-  var v_pos_min = 130 - v_temp_min * 45 / v_temp_max_sup;
+  var v_pos_min = 130 - v_temp_min * v_offset_temp / v_temp_max_sup;
   // Décaller pour ne pas superpositionner le texte
-  if( v_pos_min - ( 130 - v_temp_max * 45 / v_temp_max_sup ) < 15 )
+  if( v_pos_min - ( 130 - v_temp_max * v_offset_temp / v_temp_max_sup ) < 15 )
     v_pos_min += 15;
 
   if( Math.round( v_temp_min ) != Math.round( v_temp_max ) ) {
@@ -272,49 +320,6 @@ function show_weather( v_data, pi_lat, pi_long ) {
   // Scrollable si nécessaire
   if( v_pos_min > 160 )
     infowindow.scrollable( true );
-
-  // Vent
-  if( v_data.current.wind_speed > 0 ) {
-    var v_description = new UI.Text({
-      position: new Vector2(0, v_desc_y),
-      size: new Vector2(144, 20),
-      text : "Vent: " + Math.round( v_data.current.wind_speed * 18 / 5 * 100 ) / 100 + 'km/h ' + windDirection( v_data.current.wind_deg ),
-      font: 'Gothic 14',
-      color: 'white',
-      textAlign: 'left'
-    });
-    infowindow.add(v_description);
-
-    v_desc_y += 15;
-  }
-
-  // Nuage
-  if( v_data.current.clouds > 0 ) {
-    var v_description = new UI.Text({
-      position: new Vector2(0, v_desc_y),
-      size: new Vector2(144, 20),
-      text : "Nuage: " + v_data.current.clouds + '%',
-      font: 'Gothic 14',
-      color: 'white',
-      textAlign: 'left'
-    });
-    infowindow.add(v_description);
-
-    v_desc_y += 15;
-  }
-
-  // UV
-  if( v_data.current.uvi > 0 ) {
-    var v_description = new UI.Text({
-      position: new Vector2(0, v_desc_y),
-      size: new Vector2(144, 20),
-      text : "UV: " + v_data.current.uvi,
-      font: 'Gothic 14',
-      color: 'white',
-      textAlign: 'left'
-    });
-    infowindow.add(v_description);
-  }
 
   v_splashScreen.hide();
   infowindow.show();
