@@ -81,6 +81,13 @@ function windDirection( pi_degree ) {
     return 'N';
 }
 
+function color_temp( pi_degree ) {
+  if( pi_degree < 0 )
+    return '#78d1ec';
+
+  return '#ff0000';
+}
+
 function show_weather( v_data, pi_lat, pi_long ) {
 
   // Longueur: 144
@@ -89,7 +96,8 @@ function show_weather( v_data, pi_lat, pi_long ) {
   var infowindow = new UI.Window();
   var v_desc_y   = 45;
   var v_color;
-  var v_offset_temp;  // Vertical position for temperature, according to text information
+  var v_offset_text;  // Vertical position for temperature, according to text information
+  var v_size_rain;
 
   // Degre
   var v_degree = new UI.Text({
@@ -140,7 +148,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
     size: new Vector2(144, 20),
     text : v_data.current.weather[0].description.charAt(0).toUpperCase() + v_data.current.weather[0].description.slice(1),
     font: 'Gothic 14',
-    color: 'white',
+    color: '#A9A9A9',
     textAlign: 'left'
   });
   infowindow.add(v_description);
@@ -152,7 +160,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
       size: new Vector2(144, 20),
       text : "Vent: " + Math.round( v_data.current.wind_speed * 18 / 5 * 100 ) / 100 + 'km/h ' + windDirection( v_data.current.wind_deg ),
       font: 'Gothic 14',
-      color: 'white',
+      color: '#A9A9A9',
       textAlign: 'left'
     });
     infowindow.add(v_description);
@@ -167,7 +175,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
       size: new Vector2(144, 20),
       text : "Nuage: " + v_data.current.clouds + '%',
       font: 'Gothic 14',
-      color: 'white',
+      color: '#A9A9A9',
       textAlign: 'left'
     });
     infowindow.add(v_description);
@@ -182,7 +190,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
       size: new Vector2(144, 20),
       text : "UV: " + v_data.current.uvi,
       font: 'Gothic 14',
-      color: 'white',
+      color: '#A9A9A9',
       textAlign: 'left'
     });
     infowindow.add(v_description);
@@ -190,7 +198,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
     v_desc_y += 15;
   }
 
-  v_offset_temp = 140 - v_desc_y - 5;
+  v_offset_text = 140 - v_desc_y - 5;
 
   // Graphe
   var element = new UI.Line({
@@ -206,7 +214,24 @@ function show_weather( v_data, pi_lat, pi_long ) {
   // Arrondi à la dizaine sup pour garder une marge
   var v_temp_max_sup = Math.ceil( Math.abs( v_temp_max ) / 10 ) * 10;
 
+  // Get max rain or v_snow
   var v_rain_snow_max = 0;
+  for( i = 1; i <= 6; i++ ) {
+    var v_rain = 0;
+    var v_snow = 0;
+
+    if( v_data.hourly[i].hasOwnProperty( 'rain' ) )
+      v_rain = v_data.hourly[i].rain["1h"];
+    if( v_data.hourly[i].hasOwnProperty( 'snow' ) )
+      v_snow = v_data.hourly[i].snow["1h"];
+
+    if( v_rain > v_rain_snow_max )
+      v_rain_snow_max = v_rain;
+    if( v_snow > v_rain_snow_max )
+      v_rain_snow_max = v_snow;
+  }
+
+  v_size_rain = Math.round( ( 140 - v_desc_y - 5 ) / v_rain_snow_max * 100 ) / 100;
   for( i = 1; i <= 6; i++ ) {
     var v_rain = 0;
     var v_snow = 0;
@@ -218,12 +243,9 @@ function show_weather( v_data, pi_lat, pi_long ) {
 
     // Pluie
     if( v_rain > 0 ) {
-      if( v_rain > v_rain_snow_max )
-        v_rain_snow_max = v_rain;
-
       var element = new UI.Rect({
-        position: new Vector2(i * 18, 140 - v_rain * 20),
-        size: new Vector2(18, v_rain * 20),
+        position: new Vector2(i * 18, 140 - v_rain * v_size_rain),
+        size: new Vector2(18, v_rain * v_size_rain),
         backgroundColor: '#35aedc',
         borderColor: '#1e637c',
       });
@@ -232,12 +254,9 @@ function show_weather( v_data, pi_lat, pi_long ) {
 
     // Neige
     if( v_snow > 0 ) {
-      if( v_snow > v_rain_snow_max )
-        v_rain_snow_max = v_snow;
-
       var element = new UI.Rect({
-        position: new Vector2(i * 18, 140 - v_snow * 20),
-        size: new Vector2(9, v_snow * 20),
+        position: new Vector2(i * 18, 140 - v_snow * v_size_rain),
+        size: new Vector2(9, v_snow * v_size_rain),
         backgroundColor: '#8addfd',
         borderColor: '#8addfd',
       });
@@ -245,21 +264,15 @@ function show_weather( v_data, pi_lat, pi_long ) {
     }
 
     // Temperature
-    if( v_data.hourly[i].temp < 0 )
-      v_color = '#78d1ec';
-    else
-      v_color = '#ff0000';
-
     var element = new UI.Line({
-      position: new Vector2(i * 18, 140 - v_data.hourly[i].temp * v_offset_temp / v_temp_max_sup),
-      position2: new Vector2(( i + 1 ) * 18, 140 - v_data.hourly[i + 1].temp * v_offset_temp / v_temp_max_sup),
+      position: new Vector2(i * 18, 140 - v_data.hourly[i].temp * v_offset_text / v_temp_max_sup),
+      position2: new Vector2(( i + 1 ) * 18, 140 - v_data.hourly[i + 1].temp * v_offset_text / v_temp_max_sup),
       strokeWidth: 3,
-      strokeColor: v_color,
+      strokeColor: color_temp( v_data.hourly[i].temp ),
     });
     infowindow.add(element);
 
     // Echelle des heures
-    // Noter les Temperature max et min
     var v_description = new UI.Text({
       position: new Vector2(i * 18 + 6, 140),
       size: new Vector2(20, 20),
@@ -273,7 +286,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
 
   // Noter les Temperature max et min
   var v_description = new UI.Text({
-    position: new Vector2(0, 130 - v_temp_max * v_offset_temp / v_temp_max_sup),
+    position: new Vector2(0, 130 - v_temp_max * v_offset_text / v_temp_max_sup),
     size: new Vector2(20, 20),
     text : Math.round( v_temp_max ) + '°',
     font: 'Gothic 14',
@@ -286,7 +299,7 @@ function show_weather( v_data, pi_lat, pi_long ) {
   if( v_rain_snow_max > 0 ) {
     do {
       var v_description = new UI.Text({
-        position: new Vector2(130, 128 - v_rain_snow_max * 20),
+        position: new Vector2(130, 128 - v_rain_snow_max * v_size_rain),
         size: new Vector2(20, 20),
         text : v_rain_snow_max.toFixed( 1 ),
         font: 'Gothic 14',
@@ -300,9 +313,9 @@ function show_weather( v_data, pi_lat, pi_long ) {
     } while( v_rain_snow_max >= 0 );
   }
 
-  var v_pos_min = 130 - v_temp_min * v_offset_temp / v_temp_max_sup;
+  var v_pos_min = 130 - v_temp_min * v_offset_text / v_temp_max_sup;
   // Décaller pour ne pas superpositionner le texte
-  if( v_pos_min - ( 130 - v_temp_max * v_offset_temp / v_temp_max_sup ) < 15 )
+  if( v_pos_min - ( 130 - v_temp_max * v_offset_text / v_temp_max_sup ) < 15 )
     v_pos_min += 15;
 
   if( Math.round( v_temp_min ) != Math.round( v_temp_max ) ) {
